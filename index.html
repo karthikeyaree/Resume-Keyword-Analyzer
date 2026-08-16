@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Keyword Analyzer</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:#f5f7fb;color:#172033}
+nav{height:72px;background:#fff;border-bottom:1px solid #e7eaf0;display:flex;align-items:center;justify-content:space-between;padding:0 7%;position:sticky;top:0;z-index:10}
+.logo{font-size:22px;font-weight:800}.logo span{color:#4f46e5}
+nav a{margin-left:28px;text-decoration:none;color:#556070;font-weight:600}
+.hero{padding:80px 7% 65px;background:linear-gradient(135deg,#eef2ff,#fff)}
+.hero h1{font-size:50px;max-width:780px;margin:0 0 18px;line-height:1.08}
+.hero h1 span{color:#4f46e5}.hero p{font-size:19px;line-height:1.7;color:#5d6677;max-width:760px}
+.btn{border:0;border-radius:10px;padding:14px 22px;font-size:16px;font-weight:700;cursor:pointer;background:#4f46e5;color:#fff}
+.btn.secondary{background:#fff;color:#4f46e5;border:1px solid #d9dcf0;margin-left:8px}
+.container{max-width:1120px;margin:0 auto;padding:55px 20px}
+.section-title{text-align:center;margin-bottom:32px}.section-title h2{font-size:32px;margin:0 0 10px}.section-title p{color:#687386}
+.card{background:#fff;border:1px solid #e4e8f0;border-radius:16px;padding:26px;box-shadow:0 8px 30px rgba(30,40,80,.05)}
+.analyzer{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+label{font-weight:700;display:block;margin-bottom:9px}
+textarea{width:100%;min-height:260px;border:1px solid #dce1ea;border-radius:10px;padding:14px;font:inherit;resize:vertical}
+input[type=file]{width:100%;padding:14px;border:1px dashed #b9c0d0;border-radius:10px;background:#fafbfe}
+.actions{margin-top:18px}.result{margin-top:25px;display:none}.score{display:flex;align-items:center;gap:20px}
+.circle{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#4f46e5 var(--score),#e9ebf2 0);position:relative}
+.circle:after{content:"";position:absolute;width:90px;height:90px;background:#fff;border-radius:50%}
+.circle b{position:relative;z-index:1;font-size:24px}
+.tags{display:flex;flex-wrap:wrap;gap:8px}.tag{padding:7px 11px;border-radius:20px;background:#eef2ff;color:#3730a3;font-size:14px;font-weight:600}
+.tag.missing{background:#fff0f0;color:#b42318}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.feature h3{margin-top:0}.feature p{color:#667085;line-height:1.6}
+footer{background:#111827;color:#cbd5e1;padding:30px 7%;text-align:center}
+.small{color:#7a8494;font-size:14px;line-height:1.5}
+@media(max-width:800px){.hero h1{font-size:38px}.analyzer,.grid{grid-template-columns:1fr}nav{padding:0 4%}nav a{margin-left:10px}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Resume<span>Analyzer</span></div>
+  <div><a href="#analyzer">Analyze</a><a href="#features">Features</a></div>
+</nav>
+
+<section class="hero">
+  <h1>Make your resume <span>job-ready</span> with keyword analysis.</h1>
+  <p>Compare your resume with a target job description, find matched and missing keywords, and get a simple ATS-style compatibility score.</p>
+  <a href="#analyzer"><button class="btn">Analyze My Resume</button></a>
+  <a href="#features"><button class="btn secondary">How it works</button></a>
+</section>
+
+<section class="container" id="analyzer">
+  <div class="section-title">
+    <h2>Resume Keyword Analyzer</h2>
+    <p>Upload a resume or paste resume text, then add the target job description.</p>
+  </div>
+  <div class="analyzer">
+    <div class="card">
+      <label for="resumeFile">Upload Resume (optional)</label>
+      <input id="resumeFile" type="file" accept=".txt,.pdf,.doc,.docx">
+      <p class="small">For this demo, PDF/DOCX files are shown as selected files. Paste resume text below for live browser analysis.</p>
+      <label for="resumeText">Resume Text</label>
+      <textarea id="resumeText" placeholder="Example: Java, Python, SQL, HTML, CSS, JavaScript, Git, Data Structures, Algorithms..."></textarea>
+    </div>
+    <div class="card">
+      <label for="jobText">Job Description</label>
+      <textarea id="jobText" placeholder="Example: We are looking for a Java developer with Spring Boot, SQL, REST API, Git and Data Structures experience..."></textarea>
+      <div class="actions"><button class="btn" onclick="analyze()">Analyze Resume</button></div>
+    </div>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="score">
+      <div class="circle" id="circle"><b id="score">0%</b></div>
+      <div>
+        <h2 id="resultTitle">Analysis Result</h2>
+        <p id="summary" class="small"></p>
+      </div>
+    </div>
+    <hr style="border:0;border-top:1px solid #eee;margin:25px 0">
+    <div class="grid">
+      <div><h3>Matched Keywords</h3><div class="tags" id="matched"></div></div>
+      <div><h3>Missing Keywords</h3><div class="tags" id="missing"></div></div>
+      <div><h3>Suggestions</h3><ul id="suggestions" class="small"></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="container" id="features">
+  <div class="section-title"><h2>How the project works</h2><p>DSA concepts are used behind the analysis process.</p></div>
+  <div class="grid">
+    <div class="card feature"><h3>1. Extract</h3><p>Resume and job-description text is collected and normalized for analysis.</p></div>
+    <div class="card feature"><h3>2. Match</h3><p>Hash-based keyword lookup and set operations identify common and missing terms.</p></div>
+    <div class="card feature"><h3>3. Score</h3><p>The system calculates a keyword-based compatibility percentage and presents suggestions.</p></div>
+  </div>
+</section>
+
+<footer>Resume Keyword Analyzer • DSA Project • Self Project</footer>
+
+<script>
+const STOP = new Set(("the a an and or of to in for with on at by from is are be this that as it we our you your their they will can should have has had using use used looking required preferred experience role job work team skills").split(" "));
+const ALIASES = {
+ "js":"javascript","javascript":"javascript",
+ "reactjs":"react","react":"react",
+ "nodejs":"node","node":"node",
+ "dsa":"data structures","data":"data","structures":"structures"
+};
+
+function tokens(text){
+  return text.toLowerCase()
+    .replace(/[^a-z0-9+#.\s-]/g," ")
+    .split(/\s+/)
+    .map(x=>x.replace(/^[.-]+|[.-]+$/g,""))
+    .filter(x=>x.length>1 && !STOP.has(x));
+}
+function clean(x){return ALIASES[x]||x}
+function analyze(){
+  const resume=document.getElementById("resumeText").value.trim();
+  const job=document.getElementById("jobText").value.trim();
+  if(!resume || !job){alert("Please enter both resume text and job description.");return;}
+  const r=tokens(resume).map(clean), j=tokens(job).map(clean);
+  const rSet=new Set(r), jSet=new Set(j);
+  const matched=[...jSet].filter(x=>rSet.has(x));
+  const missing=[...jSet].filter(x=>!rSet.has(x));
+  const score=jSet.size ? Math.round(matched.length/jSet.size*100) : 0;
+  document.getElementById("result").style.display="block";
+  document.getElementById("score").textContent=score+"%";
+  document.getElementById("circle").style.setProperty("--score",score+"%");
+  document.getElementById("summary").textContent=`${matched.length} of ${jSet.size} analyzed job-description keywords were found in the resume.`;
+  const makeTags=(arr,cls="")=>arr.length?arr.map(x=>`<span class="tag ${cls}">${x}</span>`).join(""):"<span class='small'>None found</span>";
+  document.getElementById("matched").innerHTML=makeTags(matched);
+  document.getElementById("missing").innerHTML=makeTags(missing,"missing");
+  const suggestions=document.getElementById("suggestions");
+  suggestions.innerHTML="";
+  const items=[];
+  if(missing.length) items.push(`Review the missing keywords: ${missing.slice(0,8).join(", ")}.`);
+  if(score<70) items.push("Improve alignment by clearly describing relevant skills and project experience you actually have.");
+  else items.push("Good keyword alignment. Review wording and evidence for each important skill.");
+  items.push("Do not add a skill you do not actually know or have experience with.");
+  items.forEach(x=>{const li=document.createElement("li");li.textContent=x;suggestions.appendChild(li)});
+  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.getElementById("resumeFile").addEventListener("change",e=>{
+  const f=e.target.files[0];
+  if(f) document.querySelector(".small").textContent=`Selected: ${f.name}. Paste its text below for the live demo analyzer.`;
+});
+</script>
+</body>
+</html>
